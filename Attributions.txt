@@ -1,0 +1,78 @@
+Credits to artists and SFX producers that were used in Queen's Demise:
+
+Sprites and Images used from Kenney.nl
+ - kenney.nl
+
+Several tilesets and the Log enemy sprites made by ArMM1998
+ - https://opengameart.org/content/zelda-like-tilesets-and-sprites
+
+Slime enemy sprites made by Bonsaiheldin (http://bonsaiheld.org)
+ - https://opengameart.org/content/slime-monster-24x24
+
+Outdoor and Final Dungeon Tilesets made by Michele "Buch" Bucelli (https://opengameart.org/users/buch)
+ - https://opengameart.org/content/outdoor-tiles-again
+ - https://opengameart.org/content/unfinished-dungeon-tileset
+
+Tileset made by The Chayed (KIIRA) 
+ - https://opengameart.org/content/50-tileset-loz-rpg
+
+Sound Effects made by @Shades (Deva)
+ - https://opengameart.org/content/8-bit-sound-effect-pack-vol-001
+
+Numerous Character Sprites made by Cabbit and edited by diamonddmgirl - https://opengameart.org/content/edited-and-extended-24x32-character-pack
+ - https://opengameart.org/content/24x32-supernatural-creatures
+ - https://opengameart.org/content/24x32-peppercarrot-characters
+ - https://opengameart.org/content/24x32-black-character-pack
+
+Sprites from Diarandor
+ - https://opengameart.org/content/solarus-art-pack-2
+
+Bomb explosion sprites from helpcomputer
+ - https://opengameart.org/content/explosions-2
+
+Uses the "16x16 RPG Tileset" by hilau at https://opengameart.org/content/16x16-rpg-tileset, which is based off of
+  "16x16 Game Assets" by George Bailey at https://opengameart.org/content/16x16-game-assets. and 
+  "LPC Thatched-roof Cottage" by bluecarrot16 at https://opengameart.org/content/lpc-thatched-roof-cottage.
+ - https://opengameart.org/content/16x16-rpg-tileset
+
+Numerous Icons/Sprites made by Kyrise:
+  Kyrise's Free 16x16 RPG Icon Pack | Graphics made by Kyrise: https://kyrise.itch.io/
+ - https://opengameart.org/content/kyrises-free-16x16-rpg-icon-pack
+
+Bomb Explosion SFX from Luke.RUSTLTD
+ - https://opengameart.org/content/bombexplosion8bit
+
+Fang, Eyebat, and Bomb sprites made by LUNARSIGNALS for GameJolt's #FemaleLinkJam
+ - https://opengameart.org/content/overhead-action-rpg-characters
+
+Several SFX made by Michel Baradari, submitted by qubodup
+ - https://opengameart.org/content/15-monster-gruntpaindeath-sounds
+
+Statues used in puzzles made by MoikMellah
+ - https://opengameart.org/content/buddha-statues-16x16
+
+SFX made by phoenix1291 (SwissArcadeGameEntertainment)
+ - https://opengameart.org/content/sfx-the-ultimate-2017-8-bit-mini-pack
+
+Leaf rustling SFX made by qubodup
+ - https://opengameart.org/content/20-rustles-dry-leaves
+
+Indoor Tileset and Skeleton Enemy Sprites made/edited by Stephen Challener (Redshrike) and Jetrel
+ - https://opengameart.org/content/rpg-indoor-tileset-expansion-1
+ - https://opengameart.org/content/16x16-16x24-32x32-rpg-enemies-updated
+
+Ice Block made by rrcaseyr
+ - https://opengameart.org/content/ice-world-pack
+
+Sound Effects made by rubberduck
+ - https://opengameart.org/content/50-cc0-retro-synth-sfx
+ - https://opengameart.org/content/80-cc0-rpg-sfx
+
+Eyeboss Sprites made by sylvius fischer (skoam)
+ - https://opengameart.org/content/eyeball-boss
+
+Some of the sounds in this project were created by ViRiX Dreamcore soundcloud.com/virix
+ - https://opengameart.org/content/ui-and-item-sound-effect-jingles-sample-2
+
+Harp Music made by VWolfdog
+ - https://opengameart.org/content/soft-mysterious-harp-loop
