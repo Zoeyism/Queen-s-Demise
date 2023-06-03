@@ -108,14 +108,15 @@ def collision_check(sprite, coll_rects, rooms, walls, is_player=False, player=No
 class Heart(pygame.sprite.Sprite):
     """ Player's health display. Each instance is one heart. """
     total_hearts = 0
+    heart_images = load_animation(("hp0.png", "hp1.png", "hp2.png",
+                                   "hp3.png", "hp4.png"))
 
+    @staticmethod
     def reset():
         Heart.total_hearts = 0
 
     def __init__(self, player_obj):
         super().__init__()
-        self.heart_images = load_animation(("hp0.png", "hp1.png", "hp2.png",
-                                           "hp3.png", "hp4.png"))
         self.image = self.heart_images[4]
         Heart.total_hearts += 1
         self.which_heart = Heart.total_hearts
