@@ -1,10 +1,3 @@
-import pygame
-import sys
-from pygame.locals import *
-from pygame import mixer
-import os
-import random
-import math
 from extra_functions import *
 
 # Initializing pygame and setting several constants + screens #
@@ -52,16 +45,16 @@ def flip_screen(surface=screen):
 class AnimSprite(pygame.sprite.Sprite):
     """ Creates animated characters. Used for almost everything. """
 
-    def __init__(self, position, spriteList, animationSpeed, maxSpeed,
-                 animating=True, solid=False, repeat_animations = True):
+    def __init__(self, position, sprite_list, animation_speed, max_speed,
+                 animating=True, solid=False, repeat_animations=True):
         super().__init__()
 
-        self.set_animations(spriteList)
+        self.set_animations(sprite_list)
         self.animation_copy = self.anim.copy()
 
-        # Setting the current sprite to 0 so it starts at the first image.
+        # Setting the current sprite to 0, so it starts at the first image.
         self.current_sprite = 0
-        self.anim_speed = animationSpeed
+        self.anim_speed = animation_speed
         # How much to increase current_sprite by per frame.
 
         # Direction affects which set of images to animate from.
@@ -98,7 +91,7 @@ class AnimSprite(pygame.sprite.Sprite):
         self.rect.center = self.true_center = list(position)
         # true_center used since rect turns all changes to int, true_center
         # will keep float values
-        self.max_speed = maxSpeed
+        self.max_speed = max_speed
         self.speed = [0, 0]
 
         self.solid = solid
@@ -118,15 +111,15 @@ class AnimSprite(pygame.sprite.Sprite):
         if not hasattr(self, "is_boss"):
             self.is_boss = False
 
-    def set_animations(self, spriteList):
+    def set_animations(self, sprite_list):
         # Creating the images for an animated sprite that flips horizontally.
-        self.anim = {"d": load_animation(spriteList),
+        self.anim = {"d": load_animation(sprite_list),
                      "a": []}
         for image in self.anim["d"]:
             self.anim["a"] += [pygame.transform.flip(image, True, False)]
 
     def use(self):
-        """ Used later as player's use ability. """
+        """ Used later for player's use ability. """
         pass
 
     def reset_anim(self):
@@ -220,9 +213,9 @@ class AnimSprite(pygame.sprite.Sprite):
         try:
             imageOutline = pygame.mask.from_surface(self.image).outline()
             imageCopy = self.image.copy()
-            pygame.draw.lines(imageCopy, get_color(color), 3, imageOutline)
+            pygame.draw.lines(imageCopy, get_color(color), True, imageOutline)
             self.image = imageCopy
-        except:
+        except Exception:
             pass
 
     def destruct(self):
@@ -230,7 +223,7 @@ class AnimSprite(pygame.sprite.Sprite):
         Exists almost solely for the joke of calling it self.destruct()."""
         pass
 
-    def move(self, target_object):
+    def move(self, target_object=None):
         pass
 
     def launch_away(self):
@@ -287,7 +280,7 @@ class AnimSprite(pygame.sprite.Sprite):
         """
 
         WIND_UP = 30
-        WAIT_TIME = random.randint(round(FPS/2), FPS*2)
+        WAIT_TIME = random.randint(round(FPS / 2), FPS * 2)
         # Anywhere between a half second and 2 seconds of waiting.
         try:
             self.leap_timer -= 1
@@ -295,7 +288,7 @@ class AnimSprite(pygame.sprite.Sprite):
             if self.leap_timer == self.wait_timer:  # Error prevention
                 self.wait_timer += 1
 
-        except:  # Creates variables if first time through
+        except Exception:  # Creates variables if first time through
             self.leap_timer = 0
             self.wait_timer = -1
             self.winding_up = False
@@ -304,7 +297,7 @@ class AnimSprite(pygame.sprite.Sprite):
             self.target_position = target_object.rect.center[:]
             self.change_x, self.change_y = 0, 0
 
-        if self.wait_timer <= -1 and self.waiting:  # wind up time start
+        if self.wait_timer <= -1 and self.waiting:  # wind-up time start
             # Timers and booleans for managing what action to take in loop.
             self.leap_timer = WIND_UP
             self.winding_up = True
@@ -364,13 +357,13 @@ class AnimSprite(pygame.sprite.Sprite):
         if self.winding_up:
             try:
                 self.anim = self.squishAnim.copy()
-            except:
+            except Exception:
                 pass
 
     def set_direction(self, direction):
         try:
             self.direction = direction
-        except:
+        except Exception:
             pass
         try:
             self.image = self.anim[self.direction][int(self.current_sprite)]
@@ -406,10 +399,10 @@ class GameMenu(object):
         for op in status_options:
             try:
                 self.options[i] = op[1]
-            except:
+            except Exception:
                 self.options[i] = None
             self.text[i] = str(op[0])
-            self.render[i] = self.font.render(self.text[i], 1, (0, 0, 0))
+            self.render[i] = self.font.render(self.text[i], True, (0, 0, 0))
             if self.render[i].get_width() > self.width:
                 self.width = self.render[i].get_width()
             i += 1
@@ -425,7 +418,7 @@ class GameMenu(object):
             else:
                 color = self.color
             text = self.text[i]
-            render = self.font.render(text, 1, color)
+            render = self.font.render(text, True, color)
             if render.get_width() > self.width:
                 self.width = render.get_width()
             if self.use_back_image:
@@ -470,7 +463,7 @@ class GameMenu(object):
         elif isinstance(color, str):
             try:
                 self.highlight = get_color(color)
-            except:
+            except Exception:
                 pass
 
     def set_color(self, color):
@@ -479,11 +472,11 @@ class GameMenu(object):
         elif isinstance(color, str):
             try:
                 self.color = get_color(color)
-            except:
+            except Exception:
                 pass
 
     def center_at(self, new_x, new_y):
-        render = self.font.render(self.text[1], 1, self.color)
+        render = self.font.render(self.text[1], True, self.color)
         render_rect = render.get_rect()
         render_rect.center = (new_x, new_y)
         self.x, self.y = render_rect.topleft
@@ -497,10 +490,10 @@ class GameMenu(object):
         for op in options:
             try:
                 self.options[i] = op[1]
-            except:
+            except Exception:
                 self.options[i] = None
             self.text[i] = str(op[0])
-            self.render[i] = self.font.render(self.text[i], 1, (0, 0, 0))
+            self.render[i] = self.font.render(self.text[i], True, (0, 0, 0))
             if self.render[i].get_width() > self.width:
                 self.width = self.render[i].get_width()
             i += 1
@@ -549,7 +542,7 @@ class GameOptions(GameMenu):
             else:
                 color = self.color
             text = self.text[i]
-            render = self.font.render(text, 1, color)
+            render = self.font.render(text, True, color)
             if render.get_width() > self.width:
                 self.width = render.get_width()
             if self.use_back_image:
@@ -564,7 +557,7 @@ class GameOptions(GameMenu):
             num = len(self.options) + 1
         try:
             self.options[num] = option[1]
-        except:
+        except Exception:
             self.options[num] = None
         self.text[num] = str(option[0])
 
@@ -575,11 +568,14 @@ class DialogueText(object):
     Takes the drawn screen, draws a text bubble near the bottom, and then
     draws the overall text one letter per frame.
     """
-    def __init__(self, surface, name="", lines=[]):
+
+    def __init__(self, surface, name="", lines=None):
         """ Takes the base screen, the character's name, and the lines to display.
         The lines need to be in a list format, each element being one line to draw.
         Use None as an element in the list to separate each section of text.
         The max length of each line is about 52 chars, give or take."""
+        if lines is None:
+            lines = []
         self.name = name
         self.lines = lines
 
@@ -618,11 +614,11 @@ class DialogueText(object):
             if line is not None:  # None used as way to separate each section
                 self.current_text[self.line_number] += line[self.current_letter]
                 self.current_letter += 1
-                if self.current_letter > len(line)-1:
+                if self.current_letter > len(line) - 1:
                     self.current_letter = 0
                     self.current_line += 1
                     self.line_number += 1
-                    if self.current_line > len(self.lines)-1:  # if index > list length
+                    if self.current_line > len(self.lines) - 1:  # if index > list length
                         self.cont_message = False
                         self.waiting = True
             elif line is None:
@@ -632,14 +628,14 @@ class DialogueText(object):
         """ Draws the textbox to the surface given, along with the name,
          and the text currently available. """
         surface.blit(self.textbox, self.textbox_box)
-        surface.blit(self.font.render(self.name, 1, self.highlight),
-                     (self.textbox_box.left+4, self.textbox_box.top+2))
+        surface.blit(self.font.render(self.name, True, self.highlight),
+                     (self.textbox_box.left + 4, self.textbox_box.top + 2))
         for num, line in enumerate(self.current_text):
             # for each line in current_text, render it in the adjusted position.
-            render = self.font.render(line, 1, self.color)
+            render = self.font.render(line, True, self.color)
             ren_rect = render.get_rect()
-            ren_rect.topleft = [self.textbox_box.left+8,
-                                self.textbox_box.top+20+(num*12)]
+            ren_rect.topleft = [self.textbox_box.left + 8,
+                                self.textbox_box.top + 20 + (num * 12)]
             surface.blit(render, ren_rect)
 
     def update(self, all_events):
@@ -727,7 +723,7 @@ class DeathCutscene(object):
 
         death_decision = GameOptions(decision_options)
         for i in range(len(decision_options)):
-            death_decision.set_option(decision_options[i], i+1)
+            death_decision.set_option(decision_options[i], i + 1)
         choice = None
 
         while rooms.get_status("cutscene"):
@@ -805,20 +801,21 @@ class DeathCutscene(object):
 
 
 class Enemy(AnimSprite):
-    def __init__(self, position, animationSpeed, maxSpeed, damage, health, alert_status,
-                 spritesR, spritesL=None, spritesU=None, spritesD=None):
+    def __init__(self, position, animation_speed, max_speed, damage, health, alert_status,
+                 sprites_right, sprites_left=None, sprites_up=None, sprites_down=None):
 
         self.explode = load_animation(["explosion0.png", "explosion1.png", "explosion2.png",
-                                      "explosion3.png", "explosion4.png", "explosion5.png",
-                                      "explosion6.png", "explosion7.png", "explosion8.png"])
+                                       "explosion3.png", "explosion4.png", "explosion5.png",
+                                       "explosion6.png", "explosion7.png", "explosion8.png"])
         self.explode_sound = load_sound("sfx_exp_short_hard5.wav", 0.2)
         self.death_sound = load_sound("sfx_deathscream_robot1.wav", 0.3)
 
-        self.animationSpeed = animationSpeed
+        self.animation_speed = animation_speed
+        self.fly = False
         animating = True
         super(Enemy, self).__init__(
-            position, spritesR, animationSpeed, maxSpeed, animating, repeat_animations=True)
-        self.load_animation_original(spritesL, spritesD, spritesU)
+            position, sprites_right, animation_speed, max_speed, animating, repeat_animations=True)
+        self.load_animation_original(sprites_left, sprites_down, sprites_up)
 
         self.start_position = position[:]
         self.base_image = self.anim["d"][0]
@@ -832,14 +829,18 @@ class Enemy(AnimSprite):
         self.wander_direction = "d"
 
         self.animation_copy = self.anim.copy()
+        self.hitbox = self.rect
 
-    def load_animation_original(self, spritesL, spritesD, spritesU):
-        if spritesL is not None:
-            self.anim["a"] = load_animation(spritesL)
-        if spritesD is not None:
-            self.anim["s"] = load_animation(spritesD)
-        if spritesU is not None:
-            self.anim["w"] = load_animation(spritesU)
+    def reset_hitbox(self):
+        pass
+
+    def load_animation_original(self, sprites_left, sprites_down, sprites_up):
+        if sprites_left is not None:
+            self.anim["a"] = load_animation(sprites_left)
+        if sprites_down is not None:
+            self.anim["s"] = load_animation(sprites_down)
+        if sprites_up is not None:
+            self.anim["w"] = load_animation(sprites_up)
 
     def check_if_alert(self, player):
         if not self.alert:
@@ -867,20 +868,21 @@ class Enemy(AnimSprite):
     def movement(self, player):
         pass
 
-    def move(self, player):
-        self.check_if_alert(player)
+    def move(self, target_object=None):
+        if target_object is not None:
+            self.check_if_alert(target_object)
         if self.get_alert():
             if self.wander_time >= 0:
                 self.wander_time -= 1
-            elif not self.invincible:
-                self.movement(player)  # Runs individual's preferred movement
+            elif not self.invincible and target_object is not None:
+                self.movement(target_object)  # Runs individual's preferred movement
             if self.invincible:
                 self.launch_away()
         else:
-            self.unaware_move(player)
+            self.unaware_move()
         self.update_position()
 
-    def unaware_move(self, player):
+    def unaware_move(self):
         self.wander()
 
     def wander(self):
@@ -911,7 +913,7 @@ class Enemy(AnimSprite):
         if self.wander_time <= 30:  # Half second of no movement after wandering
             pass
         else:
-            wander_speed = self.max_speed/2
+            wander_speed = self.max_speed / 2
             DIRECTION_MOVES = {"d": [wander_speed, 0], "s": [0, wander_speed],
                                "a": [-wander_speed, 0], "w": [0, -wander_speed]}
             self.true_center[0] += DIRECTION_MOVES[self.wander_direction][0]
@@ -956,13 +958,13 @@ class Enemy(AnimSprite):
 
 class Bee(Enemy):
     def __init__(self, position):
-        maxSpeed = 1.9
-        animationSpeed = 15 / 60
+        max_speed = 1.9
+        animation_speed = 15 / 60
         damage = 1
         health = 8
         spritesR = ["bee1.png", "bee2.png"]
         alert_status = False
-        super(Bee, self).__init__(position, animationSpeed, maxSpeed,
+        super(Bee, self).__init__(position, animation_speed, max_speed,
                                   damage, health, alert_status, spritesR)
         self.fly = True
 
@@ -973,7 +975,7 @@ class Bee(Enemy):
 class Eyebat(Enemy):
     def __init__(self, position):
         max_speed = 2.5
-        animation_speed = 12/60
+        animation_speed = 12 / 60
         damage = 2
         health = 12
         spritesR = ["eyebat0.png", "eyebat1.png", "eyebat2.png",
@@ -981,7 +983,7 @@ class Eyebat(Enemy):
         alert_status = False
         super().__init__(position, animation_speed, max_speed, damage,
                          health, alert_status, spritesR, spritesR, spritesR, spritesR)
-        self.fly - True
+        self.fly = True
         self.swap_timer_max = 30
         self.swap_timer = self.swap_timer_max
 
@@ -1001,15 +1003,15 @@ class Eyebat(Enemy):
 
 class Slime(Enemy):
     def __init__(self, position):
-        maxSpeed = 2
-        animationSpeed = 6 / 60
+        max_speed = 2
+        animation_speed = 6 / 60
         health = 12
         damage = 2
         spritesR = ["slimeRight0.png", "slimeRight1.png", "slimeRight2.png", "slimeRight1.png"]
         spritesU = ["slimeUp0.png", "slimeUp1.png", "slimeUp2.png", "slimeUp1.png"]
         spritesD = ["slimeDown0.png", "slimeDown1.png", "slimeDown2.png", "slimeDown1.png"]
         alert_status = False
-        super(Slime, self).__init__(position, animationSpeed, maxSpeed, damage, health,
+        super(Slime, self).__init__(position, animation_speed, max_speed, damage, health,
                                     alert_status, spritesR, None, spritesU, spritesD)
 
         self.squishAnim = {"w": [load_image("slimeUpSquish.png")],
@@ -1025,8 +1027,8 @@ class Slime(Enemy):
 
 class Log(Enemy):
     def __init__(self, position):
-        maxSpeed = 1.4
-        animationSpeed = 4 / 60
+        max_speed = 1.4
+        animation_speed = 4 / 60
         health = 24
         damage = 3
         spritesR = ["logRight0.png", "logRight1.png", "logRight2.png", "logRight3.png"]
@@ -1034,7 +1036,7 @@ class Log(Enemy):
         spritesD = ["logDown0.png", "logDown1.png", "logDown2.png", "logDown3.png"]
         spritesL = ["logLeft0.png", "logLeft1.png", "logLeft2.png", "logLeft3.png"]
         alert_status = False
-        super(Log, self).__init__(position, animationSpeed, maxSpeed, damage, health, alert_status,
+        super(Log, self).__init__(position, animation_speed, max_speed, damage, health, alert_status,
                                   spritesR, spritesL, spritesU, spritesD)
         self.animation_copy = self.anim.copy()
         self.anim["d"] = load_animation(["logSleep1.png", "logSleep1.png", "logSleep2.png", "logSleep3.png"])
@@ -1047,14 +1049,14 @@ class Log(Enemy):
         try:
             if self.waking_up > 0:
                 self.waking_up -= 1
-        except:
+        except Exception:
             self.waking_up = WAKE_UP_TIME
         if self.waking_up >= 0:
             pass
         if self.waking_up == WAKE_UP_TIME:
             self.anim["d"] = self.wakeAnim
             self.current_sprite = 0
-            self.animationSpeed += 4/60
+            self.animation_speed += 4 / 60
         if self.waking_up == 0:
             self.anim = self.animation_copy
             self.run_at(target_object)
@@ -1067,7 +1069,7 @@ class Log(Enemy):
 
 class Fang(Enemy):
     def __init__(self, position):
-        animation_speed = 6/FPS
+        animation_speed = 6 / FPS
         max_speed = 1.4
         alert_status = False
         spritesR = ["fang_right0.png", "fang_right1.png", "fang_right2.png", "fang_right3.png"]
@@ -1076,8 +1078,8 @@ class Fang(Enemy):
         health = 16
         damage = 4
         super().__init__(position, animation_speed, max_speed, damage,
-                         health, alert_status, spritesR, spritesU=spritesU,
-                         spritesD=spritesD)
+                         health, alert_status, spritesR, sprites_up=spritesU,
+                         sprites_down=spritesD)
         self.move_timer_max = 90
         self.move_timer = self.move_timer_max
         self.direction = "d"
@@ -1131,7 +1133,7 @@ class Fang(Enemy):
 class Skeleton(Enemy):
     def __init__(self, position):
         max_speed = 1.5
-        animation_speed = 8/60
+        animation_speed = 8 / 60
         health = 16
         damage = 3
         sprite_list = load_sprite_sheet_format("tiny_skelly-NESW.png", [16, 18], 3, 4, [1, 0, 1, 2])
@@ -1143,13 +1145,13 @@ class Skeleton(Enemy):
         self.damage_sound = load_sound("synth_laser_02.ogg")
         self.death_sound = load_sound("deathb.wav")
 
-    def set_animations(self, spriteList):
-        self.anim = {"d": spriteList}
+    def set_animations(self, sprite_list):
+        self.anim = {"d": sprite_list}
 
-    def load_animation_original(self, spritesL, spritesD, spritesU):
-        self.anim["w"] = spritesU
-        self.anim["s"] = spritesD
-        self.anim["a"] = spritesL
+    def load_animation_original(self, sprites_left, sprites_down, sprites_up):
+        self.anim["w"] = sprites_up
+        self.anim["s"] = sprites_down
+        self.anim["a"] = sprites_left
 
     def movement(self, player):
         self.run_at(player)
@@ -1158,9 +1160,10 @@ class Skeleton(Enemy):
 class EnergyBlast(Enemy):
     """ Technically a projectile, but easiest way to get it into
     a group in the gameplay loop was to throw it in the Enemy group."""
+
     def __init__(self, position, boss_obj):
         max_speed = 1.75
-        animation_speed = 8/60
+        animation_speed = 8 / 60
         health = 100
         damage = 4
         alert_status = True
@@ -1172,9 +1175,9 @@ class EnergyBlast(Enemy):
         self.surprise_icon = True
         self.which_target = "player"
 
-    def move(self, player):
+    def move(self, target_object=None):
         if self.which_target == "player":
-            self.chase(player)
+            self.chase(target_object)
         elif self.which_target == "boss":
             self.chase(self.BOUND_TO)
 
@@ -1224,8 +1227,8 @@ class BossBase(Enemy):
         BossBase.music_started = False
         self.kill()
 
-    def move(self, player):
-        self.movement(player)
+    def move(self, target_object=None):
+        self.movement(target_object)
         self.update_position()
 
     def set_animations(self, sprite_list):
@@ -1238,7 +1241,9 @@ class BossBase(Enemy):
 class EyebossHead(BossBase):
     BODY_NUMBER = 0
 
-    def __init__(self, position, sprites_r=["worm_head.png"]):
+    def __init__(self, position, sprites_r=None):
+        if sprites_r is None:
+            sprites_r = ["worm_head.png"]
         animation_speed = 0
         max_speed = 1.5
         damage = 3
@@ -1272,19 +1277,19 @@ class EyebossHead(BossBase):
                 for g in groups:
                     g.add(self.boss_group[i])
         self.move_timer -= 1
-        if self.health <= round(self.max_health/2):
+        if self.health <= round(self.max_health / 2):
             self.max_speed = 1.8
         if self.move_timer <= 0:
             new_time = random.randint(round(
-                self.move_timer_max/2), self.move_timer_max)
+                self.move_timer_max / 2), self.move_timer_max)
             self.move_timer = new_time
             self.randomize_direction()
 
     def launch_away(self):
         pass
 
-    def move(self, player):
-        self.movement(player)
+    def move(self, target_object=None):
+        self.movement(target_object)
         self.update_position()
 
     def has_hit(self):
@@ -1305,11 +1310,11 @@ class EyebossHead(BossBase):
             self.true_center[0] -= self.max_speed
         self.reset_hitbox()
 
-    def set_animations(self, spriteList):
+    def set_animations(self, sprite_list):
         self.anim = {"w": [],
                      "a": [],
                      "s": [],
-                     "d": load_animation(spriteList)}
+                     "d": load_animation(sprite_list)}
         for image in self.anim["d"]:
             self.anim["a"] += [pygame.transform.flip(image, True, False)]
             self.anim["s"] += [pygame.transform.rotate(image.copy(), 270)]
@@ -1321,9 +1326,9 @@ class EyebossHead(BossBase):
         if self.direction in DIRECTIONS:
             dir_index = DIRECTIONS.index(self.direction)
             ran_index = random.choice([dir_index - 1, dir_index + 1])
-            if ran_index <= 1-len(DIRECTIONS):
+            if ran_index <= 1 - len(DIRECTIONS):
                 ran_index += len(DIRECTIONS)
-            elif ran_index >= len(DIRECTIONS)-1:
+            elif ran_index >= len(DIRECTIONS) - 1:
                 ran_index -= len(DIRECTIONS)
             self.set_direction(DIRECTIONS[ran_index])
         if self.direction not in DIRECTIONS:
@@ -1338,9 +1343,11 @@ class EyebossHead(BossBase):
         self.kill()
 
 
+# noinspection PyUnresolvedReferences
 class EyebossBody(EyebossHead):
-    def __init__(self, position, bind_obj=None, sprites_r=["worm_body.png"]):
-        damage = 2
+    def __init__(self, position, bind_obj=None, sprites_r=None):
+        if sprites_r is None:
+            sprites_r = ["worm_body.png"]
         health = 40
         super().__init__(position, sprites_r)
         self.health = health
@@ -1355,9 +1362,9 @@ class EyebossBody(EyebossHead):
         self.move_timer_max = 90
         self.move_timer = self.move_timer_max
 
-    def move(self, player):
+    def move(self, target_object=None):
         if self.BOUND_TO is None:
-            super().move(player)
+            super().move(target_object)
 
     def update(self):
         bind_obj = self.BOUND_TO
@@ -1380,11 +1387,11 @@ class EyebossBody(EyebossHead):
     def launch_away(self):
         pass
 
-    def set_animations(self, spriteList):
+    def set_animations(self, sprite_list):
         self.anim = {"w": [],
                      "a": [],
                      "s": [],
-                     "d": load_animation(spriteList)}
+                     "d": load_animation(sprite_list)}
         for image in self.anim["d"]:
             self.anim["a"] += [pygame.transform.flip(image, True, False)]
             self.anim["s"] += [pygame.transform.rotate(image.copy(), 270)]
@@ -1394,7 +1401,7 @@ class EyebossBody(EyebossHead):
 class DemonQueen(BossBase):
     def __init__(self, position):
         sprite_list = ["queen0.png", "queen1.png", "queen2.png", "queen1.png"]
-        animation_speed = 6/FPS
+        animation_speed = 6 / FPS
         max_speed = 1.5
         damage = 4
         health = 500
@@ -1483,30 +1490,30 @@ class DemonQueen(BossBase):
 class SurpriseIcon(AnimSprite):
     def __init__(self, enemy):
         position = (0, 0)
-        animationSpeed = 0
+        animation_speed = 0
         sprite_list = ["surprise.png"]
-        self.life_time = round(FPS/2)
-        maxSpeed = 0
-        super(SurpriseIcon, self).__init__(position, sprite_list, animationSpeed, maxSpeed)
+        self.life_time = round(FPS / 2)
+        max_speed = 0
+        super(SurpriseIcon, self).__init__(position, sprite_list, animation_speed, max_speed)
         self.bound_to = enemy
         self.update()
         self.sound = load_sound("sfx_sounds_error14.wav", 0.6)
         self.sound.play()
 
     def update(self):
-        self.rect.center = [self.bound_to.true_center[0], self.bound_to.rect.top - self.rect.height/2]
+        self.rect.center = [self.bound_to.true_center[0], self.bound_to.rect.top - self.rect.height / 2]
         self.life_time -= 1
         if self.life_time <= 0:
             self.kill()
 
 
 class NormalItem(AnimSprite):
-    def __init__(self, position, spriteList, animationSpeed, key=None, animating=True):
+    def __init__(self, position, sprite_list, animation_speed, key=None, animating=True):
         maxSpeed = 0
         self.name = None
         self.original_position = position[:]
         position = tile_pos(position[0], position[1])
-        super(NormalItem, self).__init__(position, spriteList, animationSpeed, maxSpeed, animating)
+        super(NormalItem, self).__init__(position, sprite_list, animation_speed, maxSpeed, animating)
         self.direction = "d"
         self.key = key
 
@@ -1535,12 +1542,12 @@ class NormalItem(AnimSprite):
 
 class HeartItem(NormalItem):
     def __init__(self, position, key=None):
-        spriteList = ["heart0.png", "heart1.png", "heart2.png", "heart3.png",
+        sprite_list = ["heart0.png", "heart1.png", "heart2.png", "heart3.png",
                       "heart0.png", "heart0.png", "heart0.png", "heart0.png"]
-        animationSpeed = 15 / 60
+        animation_speed = 15 / 60
         animating = True
-        super().__init__(position, spriteList,
-                         animationSpeed, key, animating)
+        super().__init__(position, sprite_list,
+                         animation_speed, key, animating)
         self.name = "heart"
 
 
@@ -1550,7 +1557,7 @@ class HeartContainer(NormalItem):
                        "heartContainer3.png", "heartContainer0.png", "heartContainer0.png",
                        "heartContainer0.png", "heartContainer0.png", "heartContainer0.png",
                        "heartContainer0.png", "heartContainer0.png", "heartContainer0.png", ]
-        animation_speed = 15/60
+        animation_speed = 15 / 60
         animating = True
         super().__init__(position, sprite_list, animation_speed, key, animating)
         self.name = "heart_up"
@@ -1695,7 +1702,7 @@ class PlayerEquipment(AnimSprite):
         super().__init__(position, sprite_list, animation_speed,
                          max_speed, animating)
         self.anim = {"d": load_animation(sprite_list),
-            "s": [], "a": [], "w": []}
+                     "s": [], "a": [], "w": []}
         for image in self.anim["d"]:
             self.anim["a"] += [pygame.transform.flip(image, True, False)]
             self.anim["s"] += [pygame.transform.rotate(image.copy(), 270)]
@@ -1754,7 +1761,7 @@ class PlayerEquipment(AnimSprite):
         if not self.is_animating:
             try:
                 self.get_sound().stop()
-            except:
+            except Exception:
                 pass
             self.get_sound().play()
             self.is_animating = True
@@ -1844,15 +1851,9 @@ class Bow(PlayerEquipment):
         max_ammo = 20
         super().__init__(player_object, sprite_list, damage,
                          damage_type, "sfx_damage_hit1.wav", max_ammo)
-        self.anim_speed = 15/60
+        self.anim_speed = 15 / 60
         self.no_ammo_sound = load_sound("sfx_wpn_noammo1.wav", 0.5)
         self.ammo = self.max_ammo
-
-    def is_using(self):
-        if self.use_timer != -1:
-            return True
-        else:
-            return False
 
 
 class HookShot(PlayerEquipment):
@@ -1869,7 +1870,7 @@ class HookShot(PlayerEquipment):
         max_ammo = -1
         super().__init__(player_object, sprite_list, damage,
                          damage_type, "Shoot 3.wav", max_ammo)
-        self.anim_speed = 10/60
+        self.anim_speed = 10 / 60
 
     def is_using(self):
         return Bow.is_using(self)
@@ -1899,6 +1900,7 @@ class BombBag(PlayerEquipment):
 
 class FlameGlove(PlayerEquipment):
     USE_KEYS = [K_f, K_l]
+
     def __init__(self, player_object):
         sprite_list = ["slash0.png", "place_bomb0.png", "place_bomb0.png", "place_bomb0.png", "place_bomb0.png"]
         damage = 8
@@ -1935,13 +1937,13 @@ class Projectile(AnimSprite):
     def has_hit(self):
         pass
 
-    def move(self):
+    def move(self, target_object=None):
         pass
 
 
 class FlameThrow(Projectile):
     def __init__(self, origin_object):
-        animation_speed = 6/60
+        animation_speed = 6 / 60
         max_speed = 0.8
         animating = True
         sprite_list = ["explosion0.png", "explosion1.png", "explosion2.png", "explosion3.png",
@@ -1964,7 +1966,7 @@ class FlameThrow(Projectile):
     def destruct(self):
         self.kill()
 
-    def move(self):
+    def move(self, target_object=None):
         if self.direction == "a":
             self.true_center[0] -= self.max_speed
         if self.direction == "d":
@@ -1996,7 +1998,7 @@ class Arrow(Projectile):
                             max_speed, animating, damage, damage_type)
         self.health = 3
 
-    def move(self):
+    def move(self, target_object=None):
         if self.direction == "a":
             self.true_center[0] -= self.max_speed
         if self.direction == "d":
@@ -2017,7 +2019,7 @@ class Arrow(Projectile):
 
 class BombPlaced(Projectile):
     def __init__(self, origin_object):
-        animation_speed = 7/FPS
+        animation_speed = 7 / FPS
         max_speed = 0
         animating = True
         sprite_list = ["bomb0.png", "bomb0.png", "bomb0.png", "bomb1.png",
@@ -2028,7 +2030,7 @@ class BombPlaced(Projectile):
         damage_type = "none"
         Projectile.__init__(self, sprite_list, origin_object, animation_speed,
                             max_speed, animating, damage, damage_type)
-        self.bomb_timer = 2.5*FPS
+        self.bomb_timer = 2.5 * FPS
         self.anim["s"] = self.anim["a"] = self.anim["w"] = self.anim["d"][:]
 
     def has_hit(self):
@@ -2045,7 +2047,7 @@ class BombPlaced(Projectile):
 
 class BombExplode(Projectile):
     def __init__(self, origin_object):
-        animation_speed = 8/FPS
+        animation_speed = 8 / FPS
         max_speed = 0
         animating = True
         sprite_list = random.choice(["bomb_exp0.png", "bomb_exp1.png"])
@@ -2065,11 +2067,9 @@ class BombExplode(Projectile):
             self.kill()
         super().update()
 
-
     def set_animations(self, spritelist):
-        self.anim = {}
-        self.anim["d"] = load_sprite_sheet_format(
-            spritelist, [32, 32], 6, 1, [0, 1, 2, 3, 4, 5, 5])[0]
+        self.anim = {"d": load_sprite_sheet_format(
+            spritelist, [32, 32], 6, 1, [0, 1, 2, 3, 4, 5, 5])[0]}
         self.anim["a"] = self.anim["w"] = self.anim["s"] = self.anim["d"][:]
 
 
@@ -2079,7 +2079,7 @@ class UIIcon(pygame.sprite.Sprite):
         try:
             self.font = pygame.font.Font(
                 os.path.join("Fonts", "Kenney Mini Square.ttf"), 10)
-        except:
+        except Exception:
             self.font = pygame.font.SysFont(
                 "timesnewroman", 10)
 
@@ -2093,11 +2093,11 @@ class UIIcon(pygame.sprite.Sprite):
         # noinspection PyAttributeOutsideInit
         self.text = str(self.get_text())
 
-    def draw(self, screen):
+    def draw(self, some_screen):
         render = self.font.render(self.text, True, get_color("white"), get_color("black"))
         render_rect = render.get_rect()
         render_rect.center = [self.rect.centerx, self.rect.bottom + 6]
-        screen.blit(render, render_rect)
+        some_screen.blit(render, render_rect)
 
 
 class KeyCount(UIIcon):
@@ -2108,15 +2108,15 @@ class KeyCount(UIIcon):
         # self.keys = 0
         self.boss_key = 0
 
-    def draw(self, screen):
-        super().draw(screen)
+    def draw(self, some_screen):
+        super().draw(some_screen)
         if self.boss_key != 0:
             render2 = self.font.render(str(self.get_boss_keys()), True,
                                        get_color("gold"), get_color("black"))
             render2_rect = render2.get_rect()
             render2_rect.center = [self.rect.centerx + 8,
                                    self.rect.bottom + 6]
-            screen.blit(render2, render2_rect)
+            some_screen.blit(render2, render2_rect)
 
     def get_keys(self):
         return self.keys
@@ -2157,12 +2157,11 @@ class Player(AnimSprite):
         Player.images = self.IMAGES.copy()
         spriteList = ["zoeySprite.png"]  # Original sprite for the game, used for rect
         position = tile_pos(3, 17)
-        animationSpeed = 8 / 60
+        animation_speed = 8 / 60
         maxSpeed = 2
         animating = True
 
-        super().__init__(position, spriteList, animationSpeed, maxSpeed, animating)
-
+        super().__init__(position, spriteList, animation_speed, maxSpeed, animating)
 
         self.image = self.IMAGES["s"][0]
         self.rect = self.image.get_rect()
@@ -2270,14 +2269,14 @@ class Player(AnimSprite):
         else:
             self.region = None
 
-    def move(self):
+    def move(self, target_object=None):
         if not self.invincible or self.inv_time < self.launch_stop:
             total_directions = 0
-            for dir in self.moving.keys():
-                if self.moving[dir]:
+            for direction in self.moving.keys():
+                if self.moving[direction]:
                     total_directions += 1
             if total_directions > 1:
-                speed = 0.8*self.speed  # Lowers speed if going diagonally
+                speed = 0.8 * self.speed  # Lowers speed if going diagonally
             else:
                 speed = self.speed
             if self.moving["s"]:  # Down
@@ -2304,21 +2303,21 @@ class Player(AnimSprite):
 
     def play_health_warning(self):
         alarm_max = FPS * 3
-        if self.health <= 4 or self.health <= round(self.max_health/4):
+        if self.health <= 4 or self.health <= round(self.max_health / 4):
             try:
                 self.alarm_timer -= 1
                 if self.alarm_timer <= -1:
                     self.alarm_timer = alarm_max
-            except:
+            except Exception:
                 self.alarm_timer = alarm_max
             if self.alarm_timer == 0:
                 self.health_alarm.play()
 
     def stop_move(self, direction):
         self.moving[direction] = False
-        for dir in self.moving.keys():
-            if self.moving[dir]:
-                self.set_direction(dir)
+        for direction in self.moving.keys():
+            if self.moving[direction]:
+                self.set_direction(direction)
 
     def check_room_trans(self, wall_dict):
         """
@@ -2344,4 +2343,3 @@ class Player(AnimSprite):
                 self.gold = self.max_gold
             if self.gold <= 0:
                 self.gold = 0
-

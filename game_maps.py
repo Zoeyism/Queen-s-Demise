@@ -1,20 +1,13 @@
-import pygame
-import sys
-from pygame.locals import *
-from pygame import mixer
-import os
-import random
-import math
 from sprite_classes import *
 
 
 class WorldObjects(AnimSprite):
     """ Base class for any object in the world that can be interacted with. """
-    def __init__(self, position, spriteList,
-                 animationSpeed, solid=False, animating=True):
+    def __init__(self, position, sprite_list,
+                 animation_speed, solid=False, animating=True):
         maxSpeed = 0
         super(WorldObjects, self).__init__(
-            position, spriteList, animationSpeed, maxSpeed, animating)
+            position, sprite_list, animation_speed, maxSpeed, animating)
         self.direction = "d"
         self.solid = solid
         self.damage_by = []
@@ -69,22 +62,22 @@ class LoadedObjects(AnimSprite):
     """
     def __init__(self, rect):
         maxSpeed = 0
-        animationSpeed = 0
+        animation_speed = 0
         animating = False
         solid = True
 
         # Only created to make sure the AnimSprite init goes through.
         spriteList = ["bush.png"]
-        position = [0, 0] # overwritten momentarily
+        position = [0, 0]  # overwritten momentarily
 
-        AnimSprite.__init__(self, position, spriteList, maxSpeed, animationSpeed, animating, solid)
+        AnimSprite.__init__(self, position, spriteList, maxSpeed, animation_speed, animating, solid)
         self.rect = rect
         self.true_center = self.rect.center
 
     def hit_by(self, other_object):
         try:
             other_object.has_hit()
-        except:
+        except Exception:
             pass
 
 
@@ -105,16 +98,16 @@ class BreakableItems(WorldObjects):
     def hit_by(self, other_object):
         try:
             damage_check = other_object.damage_type
-        except:
+        except Exception:
             damage_check = "none"
         if damage_check in self.damage_by and not self.invincible:
             try:
                 self.health -= other_object.damage
-            except:
+            except Exception:
                 self.health -= 1
             try:
                 self.hit_sound.play()
-            except:
+            except Exception:
                 pass
             other_object.has_hit()
             self.set_invincible(True)
@@ -201,16 +194,16 @@ class PuzzleObjects(BreakableItems):
     def hit_by(self, other_object):
         try:
             damage_check = other_object.damage_type
-        except:
+        except Exception:
             damage_check = "none"
         if damage_check in self.damage_by and not self.invincible:
             try:
                 self.health -= other_object.damage
-            except:
+            except Exception:
                 self.health -= 1
             try:
                 self.hit_sound.play()
-            except:
+            except Exception:
                 pass
             self.set_invincible(True)
         if damage_check not in self.pass_through and self.solid:
@@ -249,7 +242,7 @@ class ArrowSwitch(PuzzleObjects):
         try:
             if other_object.damage_type == "arrow":
                 other_object.has_hit()
-        except:
+        except Exception:
             pass
 
 
@@ -417,8 +410,8 @@ class GrassBush(BreakableItems):
         damageTypes = ["sword", "bomb"]
         health = 1
         solid = True
-        animationSpeed = 0
-        BreakableItems.__init__(self, position, spriteList, animationSpeed,
+        animation_speed = 0
+        BreakableItems.__init__(self, position, spriteList, animation_speed,
                                 damageTypes, health, solid, BushShred)
         self.hit_sound = load_sound("rustle16.ogg", 0.6)
 
@@ -444,16 +437,48 @@ class NPCBase(WorldObjects):
         self.RANDOM = self.RANDOM_LINES[:]
         self.direction = random.choice("wasd")
 
-    def set_animations(self, spriteList):
-        self.anim = {"w": spriteList[0],
-                     "d": spriteList[1],
-                     "s": spriteList[2],
-                     "a": spriteList[3]}
+    def set_animations(self, sprite_list):
+        self.anim = {"w": sprite_list[0],
+                     "d": sprite_list[1],
+                     "s": sprite_list[2],
+                     "a": sprite_list[3]}
 
     def wander(self):
-        Enemy.wander(self)
+        # Copied wander method from Enemy class
+        orig_x, orig_y = self.start_position
+        self.wander_time -= 1
+        if self.wander_time <= -1:
+            self.wander_time = random.randint(1, 3) * 20
+            wander_changed = False
+            axis_to_move = random.choice(["x", "y"])
+            if axis_to_move == "x":
+                if self.rect.centerx >= orig_x:
+                    self.wander_direction = "a"
+                    wander_changed = True
+                elif self.rect.centerx < orig_x:
+                    self.wander_direction = "d"
+                    wander_changed = True
+            else:
+                if self.rect.centery >= orig_y:
+                    self.wander_direction = "w"
+                    wander_changed = True
+                elif self.rect.centery > orig_y:
+                    self.wander_direction = "s"
+                    wander_changed = True
+            if not wander_changed:  # if above failed to change dir:
+                self.wander_direction = random.choice(["w", "d", "a", "s"])
+            if self.wander_direction in self.anim.keys():
+                self.direction = self.wander_direction
+        if self.wander_time <= 30:  # Half second of no movement after wandering
+            pass
+        else:
+            wander_speed = self.max_speed / 2
+            DIRECTION_MOVES = {"d": [wander_speed, 0], "s": [0, wander_speed],
+                               "a": [-wander_speed, 0], "w": [0, -wander_speed]}
+            self.true_center[0] += DIRECTION_MOVES[self.wander_direction][0]
+            self.true_center[1] += DIRECTION_MOVES[self.wander_direction][1]
 
-    def move(self, target_object):
+    def move(self, target_object=None):
         if self.type == "stationary":
             self.current_sprite = 0
             self.rand_timer -= 1
@@ -462,14 +487,14 @@ class NPCBase(WorldObjects):
             if self.rand_timer == 0:
                 self.direction = random.choice("wasd")
         else:
-            Enemy.wander(self)
+            self.wander()
         self.update_position()
         if self.last_position == self.true_center:
             self.current_sprite = 0
         self.last_position = self.true_center[:]
         self.update_image()
 
-    def use(self):
+    def use(self, rooms=None, player=None):
         npc_speech = DialogueText(screen, self.name, self.lines)
         npc_speech.loop()
 
@@ -556,7 +581,7 @@ class Mayor(NPCBase):
                           "first": self.FIRST_LINES,
                           "second": self.SECOND_LINES}
 
-    def use(self, rooms, player):
+    def use(self, rooms=None, player=None):
         to_do = "nothing"
 
         if not rooms.dialogue_status[self.name]["intro"]:
@@ -570,7 +595,7 @@ class Mayor(NPCBase):
             rooms.dialogue_status[self.name]["first"] = True
 
         elif (not rooms.dialogue_status[self.name]["second"] and
-              player.region_keys["tower"].get_boss_keys()>= 2):
+              player.region_keys["tower"].get_boss_keys() >= 2):
             self.lines = self.ALL_LINES["second"][:]
             rooms.dialogue_status[self.name]["second"] = True
             to_do = "remove_soldiers"
@@ -590,8 +615,8 @@ class Shopkeeper(NPCBase):
                       "their wares or rambles on."]
     INVENTORY = [["Potion", "potion"], ["Potion Bottle", "potion_up"],
                  ["Cancel", "cancel"]]
-                # ["Arrows", "arrow"], ["Bombs", "bomb"], ["Fire Refill", "flame"],
-                # ["Heart Container", "heart_up"]]
+    # ["Arrows", "arrow"], ["Bombs", "bomb"], ["Fire Refill", "flame"],
+    # ["Heart Container", "heart_up"]]
     BUY_LINE_SPLIT = ["OK, so the ",
                       " is going to cost ",
                       " gold. Do you want it?"]
@@ -608,10 +633,10 @@ class Shopkeeper(NPCBase):
     def set_lines(self, lines_to_set):
         try:
             self.lines = lines_to_set[:]
-        except:
+        except Exception:
             pass
 
-    def use(self, rooms, player):
+    def use(self, rooms=None, player=None):
         inventory = self.INVENTORY[:]
         for item in inventory[:]:
             if item[1] in rooms.QUANTITY[self.name].keys():
@@ -669,7 +694,7 @@ class Shopkeeper(NPCBase):
                             if inv[1] == answer:
                                 item["key"] = inv[0]
                                 item["info_name"] = inv[1]
-                        line = [self.BUY_LINE_SPLIT[0] + str(item["key"])+ self.BUY_LINE_SPLIT[1]]
+                        line = [self.BUY_LINE_SPLIT[0] + str(item["key"]) + self.BUY_LINE_SPLIT[1]]
                         if item["info_name"] in rooms.COSTS.keys():
                             item["cost"] = rooms.COSTS[item["info_name"]]
                             line.append(str(item["cost"]))
@@ -767,7 +792,7 @@ class Soldier(NPCBase):
         super().__init__(position, sprite_name)
         self.name = "Soldier"
 
-    def use(self):
+    def use(self, room=None, player=None):
         self.randomize_lines()
         super().use()
 
@@ -792,7 +817,7 @@ class OldLadyBase(NPCBase):
         self.name = "Old Lady"
         self.randomize_lines()
 
-    def use(self):
+    def use(self, room=None, player=None):
         self.randomize_lines()
         super().use()
 
@@ -818,7 +843,7 @@ class OldManBase(NPCBase):
         self.name = "Old Man"
         self.randomize_lines()
 
-    def use(self):
+    def use(self, room=None, player=None):
         self.randomize_lines()
         super().use()
 
@@ -939,7 +964,7 @@ class AllRooms(object):
                     2: [Soldier, 3.5, 12], 3: [Soldier, 16.5, 12], 5: [Soldier, 12.5, 16.5]},
                 9: {0: [ArrowSwitch, 11, 14.5], 4: [ArrowSwitch, 18, 9.5],
                     1: [StatueBlue, 4, 12.5], 2: [StatueBlue, 5, 12.5],
-                    6: [StatueRed, 12, 9], 7:[StatueRed, 12, 10], 8:[StatueRed, 12, 11]},
+                    6: [StatueRed, 12, 9], 7: [StatueRed, 12, 10], 8: [StatueRed, 12, 11]},
                 10: {0: [ArrowSwitch, 8.1, 13], 1: [StatueBlue, 5.5, 16], 2: [StatueBlue, 5.5, 17],
                      3: [StatueBlue, 5.5, 18], 4: [StatueRed, 10.5, 16], 5: [StatueRed, 10.5, 17],
                      6: [StatueRed, 10.5, 18], 7: [StatueRed, 17, 7], 8: [StatueRed, 18, 7],
@@ -970,7 +995,7 @@ class AllRooms(object):
                     2: [StatueRed, 2, 9], 3: [StatueRed, 3, 9],
                     4: [StatueBlue, 14, 17.5], 5: [StatueBlue, 14, 18.5], 6: [StatueBlue, 14, 16.5]},
                 6: {0: [Soldier, 7.5, 13.5], 1: [Soldier, 12.5, 13.5], 2: [Soldier, 16.5, 16.5],
-                    3: [Soldier, 13.5, 9.5], 4: [Soldier, 6.5, 9.5], 5: [Soldier,6.5, 6.5],
+                    3: [Soldier, 13.5, 9.5], 4: [Soldier, 6.5, 9.5], 5: [Soldier, 6.5, 6.5],
                     6: [Soldier, 13.5, 6.5], 7: [Soldier, 15.5, 4.5], 8: [Soldier, 3.5, 5.5]},
                 7: {0: [Witch, 2.5, 5], 1: [BowNPC, 17.5, 5],
                     2: [Soldier, 8.5, 2], 3: [Soldier, 9.5, 2], 4: [Soldier, 10.5, 2],
@@ -1012,8 +1037,8 @@ class AllRooms(object):
         self.room_objects = {}
 
         self.ALL_ENEMIES = {
-            2: {5:[[Log, 3, 5], [Bee, 15, 4], [Slime, 4, 16]],
-                6:[[Bee, 3, 3], [Slime, 4, 10], [Slime, 14, 7]]
+            2: {5: [[Log, 3, 5], [Bee, 15, 4], [Slime, 4, 16]],
+                6: [[Bee, 3, 3], [Slime, 4, 10], [Slime, 14, 7]]
                 },
             3: {4: [[]],
                 5: [[Bee, 18, 18], [Bee, 2, 2], [Bee, 19, 5]],
@@ -1072,6 +1097,7 @@ class AllRooms(object):
                               "mountains": False}
 
     def set_status(self, new_status, boolean=True):
+        print("TEST: Status: " + new_status + "; Changing to: " + str(boolean))
         success = False
         for s in self.status:
             if s == new_status:
@@ -1081,7 +1107,7 @@ class AllRooms(object):
             self.status[new_status] = boolean
 
     def set_status_gameplay(self):
-        self.set_status("gameplay")
+        self.set_status("gameplay", True)
         self.set_status("pause_menu", False)
 
     def set_status_start_menu(self):
@@ -1095,7 +1121,7 @@ class AllRooms(object):
     def get_status(self, status_call):
         try:
             return self.status[status_call]
-        except:
+        except Exception:
             return False
 
     def get_room_num(self):
@@ -1109,7 +1135,7 @@ class AllRooms(object):
         try:
             self.top = pygame.image.load(
                 os.path.join("mapFiles", (self.room_name+"top"+self.extension))).convert_alpha()
-        except:  # If no top image for the room, replaced with a transparent image
+        except Exception:  # If no top image for the room, replaced with a transparent image
             fake_top = pygame.Surface(
                 (self.background.get_size()), pygame.SRCALPHA)  # surface w/alpha
             fake_top.fill((255, 255, 255, 0))
@@ -1132,7 +1158,7 @@ class AllRooms(object):
                            "objects": [None],
                            "floor": [None],
                            "background": self.background}
-        except:
+        except Exception:
             target_room = self.current_room[:]
         return target_room
     
@@ -1145,7 +1171,7 @@ class AllRooms(object):
         self.background = room_dict["background"]
 
     def redraw_room(self, base_screen):
-        base_screen.blit(self.background,(0,0))
+        base_screen.blit(self.background, (0, 0))
 
         return base_screen
 
@@ -1189,14 +1215,14 @@ class AllRooms(object):
     def remove_item(self, item_obj):
         try:
             self.room_items[self.room_num[0]][self.room_num[1]].pop(item_obj.get_key())
-        except Exception as e:
+        except Exception:
             # print (e)
             pass
 
     def remove_object(self, item_obj):
         try:
             self.room_objects[self.room_num[0]][self.room_num[1]].pop(item_obj.get_key())
-        except Exception as e:
+        except Exception:
             # print(e)
             pass
 
@@ -1231,7 +1257,7 @@ class AllRooms(object):
         """
         try:
             enemiesToAdd = self.ALL_ENEMIES[self.room_num[0]][self.room_num[1]]
-        except Exception as e:
+        except Exception:
             enemiesToAdd = [[]]
             # print(e)
         return enemiesToAdd
@@ -1245,10 +1271,10 @@ def room_walls(base_screen):
     """
     scr_x, scr_y = base_screen.get_size()
     room_walls_dict = dict()
-    room_walls_dict["left"] = pygame.Rect(0,0,2,scr_y)
-    room_walls_dict["up"] = pygame.Rect(0,0,scr_x,2)
-    room_walls_dict["down"] = pygame.Rect(0,scr_y-2,scr_x,2)
-    room_walls_dict["right"] = pygame.Rect(scr_x-2,0,2,scr_y)
+    room_walls_dict["left"] = pygame.Rect(0, 0, 2, scr_y)
+    room_walls_dict["up"] = pygame.Rect(0, 0, scr_x, 2)
+    room_walls_dict["down"] = pygame.Rect(0, scr_y - 2, scr_x, 2)
+    room_walls_dict["right"] = pygame.Rect(scr_x - 2, 0, 2, scr_y)
     return room_walls_dict
 
 

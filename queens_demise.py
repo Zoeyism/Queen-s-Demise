@@ -1,22 +1,16 @@
-import pygame
-import sys
-from pygame.locals import *
-from pygame import mixer
-import os
-import random
-import math
+from game_maps import *
 
-# Some assets are my own design, others are from
-#   kenney.nl, a free asset website, and
+# Most imports are hidden within imports from other files
+
+# This is the Main File for Queen's Demise!
+# Most assets are from kenney.nl, a free asset website, and
 #   opengameart.org, another free asset site.
 
-from sprite_classes import *
-from game_maps import *
-from extra_functions import *
 
 rooms = AllRooms()
 
-def collision_check(sprite, coll_rects, rooms, walls, is_player=False, player=None):
+
+def collision_check(sprite, coll_rects, all_rooms, walls, is_player=False, player=None):
     if is_player:
         old_center = sprite.hitbox.center[:]
     else:
@@ -33,28 +27,29 @@ def collision_check(sprite, coll_rects, rooms, walls, is_player=False, player=No
 
     side_coll = False
     vert_coll = False
-    general_coll = False
+    # general_coll = False
 
     # CHECKING ROOM TRANSITION COLLISION
     if is_player:
         transition_dict = sprite.check_room_trans(walls)
         if transition_dict[0]:
-            general_coll = True
+            # general_coll = True
             if transition_dict["up"]:
-                rooms.set_room_num(y=1)
+                print("TEST: IS UP.")
+                all_rooms.set_room_num(y=1)
                 sprite.true_center[1] = SCREEN_HEIGHT - round(0.5 * sprite.rect.height)
             elif transition_dict["down"]:
-                rooms.set_room_num(y=-1)
+                all_rooms.set_room_num(y=-1)
                 sprite.true_center[1] = round(0.5 * sprite.rect.height)
             elif transition_dict["left"]:
-                rooms.set_room_num(x=-1)
+                all_rooms.set_room_num(x=-1)
                 sprite.true_center[0] = SCREEN_WIDTH - round(0.5 * sprite.rect.width)
             elif transition_dict["right"]:
-                rooms.set_room_num(x=1)
+                all_rooms.set_room_num(x=1)
                 sprite.true_center[0] = round(0.5 * sprite.rect.width)
             sprite.reset_hitbox()
 
-            rooms.set_status("room_transition")
+            all_rooms.set_status("room_transition")
             return
 
     for coll_obj in coll_rects:
@@ -68,31 +63,32 @@ def collision_check(sprite, coll_rects, rooms, walls, is_player=False, player=No
             # print(e)
         if not sprite.fly and sprite_rect.colliderect(coll_obj.rect):
             COLL_TOLERANCE = 10
-            general_coll = True
+            # general_coll = True
 
             if abs(sprite_rect.top - coll_obj.rect.bottom) < COLL_TOLERANCE:
                 if sprite_rect.centery < old_center[1]:  # Moving up
                     vert_coll = True
-                    general_coll = False
+                    # general_coll = False
             if abs(sprite_rect.bottom - coll_obj.rect.top) < COLL_TOLERANCE:
                 if sprite_rect.centery > old_center[1]:  # Moving down
                     vert_coll = True
-                    general_coll = False
+                    # general_coll = False
 
             if abs(sprite_rect.left - coll_obj.rect.right) < COLL_TOLERANCE:
                 if sprite_rect.centerx < old_center[0]:  # Moving left
                     side_coll = True
-                    general_coll = False
+                    # general_coll = False
             if abs(sprite_rect.right - coll_obj.rect.left) < COLL_TOLERANCE:
                 if sprite_rect.centerx > old_center[0]:  # Moving right
                     side_coll = True
-                    general_coll = False
+                    # general_coll = False
 
     if side_coll or vert_coll:
         try:
             if sprite.is_boss:
                 sprite.has_hit()
-        except:
+        except Exception as e:
+            # print(e)
             pass
         if side_coll:
             sprite.rect.centerx = old_center[0]
@@ -150,7 +146,8 @@ class UIText(pygame.sprite.Sprite):
         try:
             self.font = pygame.font.Font(
                 os.path.join("Fonts", "Kenney Mini Square.ttf"), 10)
-        except:
+        except Exception as e:
+            # print(e)
             self.font = pygame.font.SysFont(
                 "timesnewroman", 10)
         self.plate_image = load_image("green_pressed1.png")
@@ -209,11 +206,10 @@ class UseRect(pygame.sprite.Sprite):
         self.active = False
 
 
-def pause_menu(rooms, base_screen):
+def pause_menu(all_rooms, base_screen):
     set_music(MENU_MUSIC[0], MENU_MUSIC[1])
     background = base_screen.copy()
     pause_screen = base_screen.copy()
-    clock = pygame.time.Clock()
 
     # Title Settings
     menuTitle = GameMenu(["Paused"])
@@ -225,7 +221,7 @@ def pause_menu(rooms, base_screen):
     menuTitle.set_highlight(get_color("purple"))
 
     # Menu Settings
-    menuButtons = GameMenu(["Continue", rooms.set_status_gameplay], ["Quit", exit_game])
+    menuButtons = GameMenu(["Continue", all_rooms.set_status_gameplay], ["Quit", exit_game])
     menuButtons.set_font(pygame.font.Font(
         os.path.join("Fonts", "Kenney Mini Square.ttf"), 16))
     menuButtons.center_at(tile_size(10), tile_size(7))
@@ -233,12 +229,12 @@ def pause_menu(rooms, base_screen):
     menuButtons.set_color(get_color("black"))
     menuButtons.set_highlight(get_color("green"))
 
-    rooms.set_status("pause_menu")
+    all_rooms.set_status("pause_menu")
 
     menu_sound = load_sound("sfx_sounds_pause7_in.wav", 0.3)
     menu_sound.play()
 
-    while rooms.get_status("pause_menu"):
+    while all_rooms.get_status("pause_menu"):
         pause_screen.blit(background, (0, 0))
         events = pygame.event.get()
 
@@ -354,7 +350,7 @@ def credits_menu():
     menu_options = GameOptions(["Page 1", 0])
     choices = [["Page 1", 0], ["Page 2", 1], ["Back  ", 2]]
     for i in range(3):
-        menu_options.set_option(choices[i], i+1)
+        menu_options.set_option(choices[i], i + 1)
     menu_options.center_at(tile_size(16), tile_size(17.5))
 
     menu_back1 = pygame.image.load(os.path.join("mapFiles", "[7,8].png")).convert()
@@ -373,7 +369,8 @@ def credits_menu():
             else:
                 try:
                     credits_display.set_options(credits_lines[decision])
-                except:
+                except Exception as e:
+                    # print(e)
                     pass
 
         menu_options.draw(screen)
@@ -384,13 +381,14 @@ def credits_menu():
 
         flip_screen()
 
+
 def gameplay():
     """
     Main gameplay loop. Sets up all instances used in gameplay, almost
     everything happens here.
     """
-    rooms.set_status("gameplay")
-    rooms.set_status("room_transition")
+    rooms.set_status("gameplay", True)
+    rooms.set_status("room_transition", True)
 
     set_music(GAME_MUSIC[0], GAME_MUSIC[1])
     # Setting up player classes, including equipment
@@ -446,14 +444,14 @@ def gameplay():
 
     # Used during testing of game and as dev menu
     testing = False
-    cheat_allowed = True
+    cheat_allowed = False
     ui_added = False
     testing_options = [["Tundra", [6, 9]],
                        ["Mountains", [9, 5]],
                        ["Boss Dungeon", [11, 8]],
                        ["Final Bosses", [14, 9]],
                        ["Cancel", "cancel"]]
-    testing_room = None
+
     test_choices = GameOptions(["Mountains", "blah"])
     for i in range(len(testing_options)):
         test_choices.set_option(testing_options[i], i + 1)
@@ -469,8 +467,8 @@ def gameplay():
 
         if player.health <= 0:
             player.health = 0
-            for dir in "wasd":
-                player.stop_move(dir)
+            for direction in "wasd":
+                player.stop_move(direction)
             rooms.set_status("cutscene", True)
             death_scene.loop(rooms)
 
@@ -535,8 +533,9 @@ def gameplay():
             player_projectiles.empty()
             enemy_projectiles.empty()
 
+            room_num = rooms.room_num
+
             # removes key display based on room change
-            room_num = rooms.get_room_num()
             if room_num in [[6, 8], [8, 6], [9, 8]]:
                 player.set_region(None)
                 for ui in ui_group:
@@ -550,14 +549,13 @@ def gameplay():
                 ui_group.add(player.region_keys["tundra"])
                 player.set_region("tundra")
 
-            elif room_num == [8, 5]:
+            elif rooms.room_num == [8, 5]:
                 ui_group.add(player.region_keys["mountains"])
                 player.set_region("mountains")
 
             elif room_num == [10, 8]:
                 ui_group.add(player.region_keys["tower"])
                 player.set_region("tower")
-
 
             rooms.reset_room_info()
             rooms.build_room_initial()
@@ -587,8 +585,8 @@ def gameplay():
                     obj = room_objects[key]
                     try:
                         object_group.add(obj[0](tile_pos(obj[1], obj[2]), key))
-                    except Exception as e2:
-                        # print(e2)
+                    except Exception as e:
+                        # print(e)
                         object_group.add(obj[0](tile_pos(obj[1], obj[2])))
                 except Exception as e:
                     # print(e)
@@ -606,23 +604,19 @@ def gameplay():
                         # print(e)
                         pass
 
-
             rooms.set_status("room_transition", False)
 
         ################# CHECKING PLAYER INPUT ##################################
-        any_left = False
-        for enemy in enemy_group:
-            any_left = True
-            break
+        any_enemies_left = False
+        if len(enemy_group.sprites()) > 0:
+            any_enemies_left = True
 
-        if room_num in [[7, 10], [8, 4]]:
-            if not any_left:
+        if rooms.room_num in [[7, 10], [8, 4]]:
+            if not any_enemies_left:
                 rooms.bosses_beaten[player.region] = True
                 if not rooms.pieces_given[player.region] and rooms.bosses_beaten[player.region]:
                     items = rooms.get_room_items()
-                    #no_items = True
                     for key in items.keys():
-                        no_items = False
                         allowed = {0: True,
                                    1: True}
                         for i in item_group:
@@ -637,8 +631,8 @@ def gameplay():
                             except Exception as e:
                                 # print(e)
                                 pass
-                    #if no_items:
-                        #rooms.pieces_given["tundra"] = True
+                    # if no_items:
+                    # rooms.pieces_given["tundra"] = True
 
         if not pygame.display.get_active():
             # Pauses game if screen is minimized
@@ -700,7 +694,6 @@ def gameplay():
                 if cheat_allowed and event.key == K_BACKSPACE:
                     testing = True
 
-
         ################# CHECKING AND HANDLING COLLISIONS ##################################
 
         if movement_allowed:
@@ -733,10 +726,10 @@ def gameplay():
             if did_collide(player.hitbox, proj.rect):
                 player.hit_by(proj)
 
-        any_left = False
+        any_enemies_left = False
 
         for enemy in enemy_group:
-            any_left = True
+            any_enemies_left = True
             if not enemy.get_invincible():
                 if sword.is_using():
                     if did_collide(sword.rect, enemy.rect):
@@ -822,8 +815,8 @@ def gameplay():
                                                "Your health has increased by one full heart!"])
                     stop_player = True
                 if stop_player:
-                    for dir in "wasd":
-                        player.stop_move(dir)
+                    for direction in "wasd":
+                        player.stop_move(direction)
                 if text is not None:
                     text.loop()
                 rooms.remove_item(item)
@@ -837,15 +830,16 @@ def gameplay():
             collision_check(obj, coll_rects, rooms, walls, False, player)
             if obj.rect.colliderect(sword.rect) and sword.is_using():
                 obj.hit_by(sword)
-            if (p_use.is_active() and did_collide(p_use.rect, obj.rect)):
+            if p_use.is_active() and did_collide(p_use.rect, obj.rect):
                 try:
                     obj.use()
-                except Exception as e:
+                except Exception:
                     to_do = "nothing"
                     item_to_add = None
                     try:
                         to_do = obj.use(rooms, player)
-                    except:
+                    except Exception as e:
+                        # print(e)
                         pass
                     if to_do == "gold":
                         player.add_gold(1000)
@@ -894,7 +888,7 @@ def gameplay():
                     if isinstance(status, int):
                         PuzzleObjects.all_sprite = status
                 if obj.affects == "enemies":
-                    if not any_left:
+                    if not any_enemies_left:
                         obj.set_sprite(1)
                     else:
                         obj.set_sprite(0)
@@ -908,7 +902,7 @@ def gameplay():
             maybe_dead = enemy.death_check()
             if maybe_dead == "delete":
                 death_group.remove(enemy)
-                death_spot = (enemy.rect.centerx/16, enemy.rect.centery/16)
+                death_spot = (enemy.rect.centerx / 16, enemy.rect.centery / 16)
                 enemy.kill()
                 if random.randint(1, 3) != 3:  # chance of dropping an item
                     item_list = [HeartItem, BombItem, ArrowItem, FlameItem, GoldItem, GoldItem, GoldItem]
@@ -919,7 +913,7 @@ def gameplay():
                         if eq_lst[i].get_ammo() <= 5:
                             for num in range(3):
                                 item_list.append(eq_drop[i])
-                    if player.health <= round(player.max_health/5):
+                    if player.health <= round(player.max_health / 5):
                         for num in range(3):
                             item_list.append(HeartItem)
                     item_to_add = random.choice(item_list)
@@ -958,7 +952,6 @@ def gameplay():
         death_group.draw(screen)
 
         draw_boss_health(screen, enemy_group)
-
 
         # Scaling up game screen due to low resolution
         if not rooms.get_status("room_transition"):
@@ -1020,10 +1013,13 @@ def gameplay():
                 option.draw(screen)
 
                 flip_screen()
+
     Heart.reset()  # Resets the number of hearts in the UI, allows loading back in without issues
 
 
 def main():
+    print("TEST: START MAIN.")
+
     # Setting music and how often to repeat key presses
     set_music(MENU_MUSIC[0], MENU_MUSIC[1])
     pygame.key.set_repeat(round(100 / FPS))

@@ -1,9 +1,10 @@
-import pygame, sys
-from pygame.locals import *
-from pygame import mixer
 import os
 import random
 import math
+import pygame
+import sys
+from pygame import mixer
+from pygame.locals import *
 
 # Tile size refers to the number of pixels per "tile",
 #   both width and height-wise.
@@ -19,20 +20,20 @@ def exit_game():
     sys.exit()
 
 
-def load_image(fileName):
+def load_image(file_name):
     """ Loads image from Assets folder, and returns it."""
     image = pygame.image.load(
-        os.path.join("Assets", fileName)).convert_alpha()
+        os.path.join("Assets", file_name)).convert_alpha()
     return image
 
 
-def load_animation(fileNames):
+def load_animation(file_names):
     """
     Loads multiple images using the load_image function,
     returns them as a list in the same order.
     """
     animation = []
-    for file in fileNames:
+    for file in file_names:
         animation += [load_image(file)]
     return animation
 
@@ -46,7 +47,7 @@ def load_sound(file_name, vol=0.4):
     try:
         sound = mixer.Sound(os.path.join("Assets", file_name))
         sound.set_volume(vol)
-    except:
+    except Exception:
         # Muted sound file to use in case a sound is not available
         sound = mixer.Sound(
             os.path.join("Assets", "scratch_004.ogg"))
@@ -77,26 +78,26 @@ def un_tile_size(position):
     return position
 
 
-def get_color(colorName="black"):
+def get_color(color_name="black"):
     """
     Available colors: 'red', 'black', 'white', 'green', 'purple', 'gold'
     If string sent doesn't work as a color name, black is returned instead.
     """
     ALL_COLORS = {"red": (255, 0, 0), "black": (0, 0, 0), "white": (255, 255, 255),
-                  "green": (0, 140, 0), "purple": (150, 0, 140), "gold":(255, 215, 0)}
+                  "green": (0, 140, 0), "purple": (150, 0, 140), "gold": (255, 215, 0)}
     try:
-        color = ALL_COLORS[colorName]
-    except Exception as e:
+        color = ALL_COLORS[color_name]
+    except Exception:
         # print(e)
         color = ALL_COLORS["black"]
     return color
 
 
-def did_collide(firstRect, secondRect):
+def did_collide(first_rect, second_rect):
     """
     Checks to see if two rects collide using colliderect().
     """
-    if firstRect.colliderect(secondRect):
+    if first_rect.colliderect(second_rect):
         return True
     else:
         return False
@@ -107,7 +108,7 @@ def draw_rect_outline(base_screen, rectangle, color_name="white"):
     color = get_color(color_name)
     try:
         pygame.draw.rect(base_screen, color, rectangle, 2)
-    except:
+    except Exception:
         pass
 
 
@@ -126,7 +127,7 @@ def draw_boss_health(base_screen, enemy_group):
                 color = get_color("gold")
             else:
                 color = get_color("green")
-            render = font.render(str(enemy.health), 0, color)
+            render = font.render(str(enemy.health), False, color)
             base_screen.blit(render, text_rect)
 
 
@@ -147,10 +148,10 @@ class DisplayText(object):
     color_def = (0, 0, 0)
     background_def = None
     center_pos_def = (32, 32)
-    KEY_LETTERS = {K_a:"a", K_b:"b", K_c:"c", K_d:"d", K_e:"e", K_f:"f", K_g:"g",
-                   K_h:"h", K_i:"i", K_j:"j", K_k:"k", K_l:"l", K_m:"m", K_n:"n",
-                   K_o:"o", K_p:"p", K_q:"q", K_r:"r", K_s:"s", K_t:"t", K_u:"u",
-                   K_v:"v", K_w:"w", K_x:"x", K_y:"y", K_z:"z", K_SPACE:" "}
+    KEY_LETTERS = {K_a: "a", K_b: "b", K_c: "c", K_d: "d", K_e: "e", K_f: "f", K_g: "g",
+                   K_h: "h", K_i: "i", K_j: "j", K_k: "k", K_l: "l", K_m: "m", K_n: "n",
+                   K_o: "o", K_p: "p", K_q: "q", K_r: "r", K_s: "s", K_t: "t", K_u: "u",
+                   K_v: "v", K_w: "w", K_x: "x", K_y: "y", K_z: "z", K_SPACE: " "}
     VALID_KEYS = list(KEY_LETTERS.keys())
     
     def __init__(self, font_name, font_size, center_position,
@@ -167,10 +168,10 @@ class DisplayText(object):
             self.font_size = 12
         try:
             self.font = pygame.font.Font(font_name, self.font_size)
-        except:
+        except Exception:
             try:
                 self.font = pygame.font.SysFont(font_name, self.font_size)
-            except:
+            except Exception:
                 self.font = pygame.font.SysFont(
                     self.font_def, self.font_size)
                 print("Failed to load given font.")
@@ -185,7 +186,7 @@ class DisplayText(object):
     def get_letter(self, key):
         try:
             letter = self.KEY_LETTERS[key]
-        except:
+        except Exception:
             letter = ""
         return letter
     
@@ -196,7 +197,7 @@ class DisplayText(object):
         if position is not None:
             self.position = position
         # If lines is a string, turns into list
-        if isinstance(lines,str):
+        if isinstance(lines, str):
             lines = [lines]
 
         # Create list of actual lines to print
@@ -243,8 +244,8 @@ def load_sprite_sheet(image_name):
     return all_lists
 
 
-def load_sprite_sheet_format(image_name, SPR_SIZE=[24, 32],
-                             column_amount=3, row_amount=4, spr_order=[1, 0, 1, 2]):
+def load_sprite_sheet_format(image_name, spr_size=None,
+                             column_amount=3, row_amount=4, spr_order=None):
     """
     Converts spritesheets into images for animations.
             Customizable version of load_sprite_sheet.
@@ -253,6 +254,10 @@ def load_sprite_sheet_format(image_name, SPR_SIZE=[24, 32],
     spr_order refers to how the images should be packed into each list;
         ex: [1, 0, 1, 2] puts 2nd, 1st, 2nd, 3rd image as list order.
     """
+    if spr_order is None:
+        spr_order = [1, 0, 1, 2]
+    if spr_size is None:
+        spr_size = [24, 32]
     sprite_sheet = load_image(image_name)
 
     all_lists, spr_list = [], []
@@ -263,10 +268,10 @@ def load_sprite_sheet_format(image_name, SPR_SIZE=[24, 32],
 
     for vert in range(row_amount):
         for hor in range(column_amount):
-            pos_x = SPR_SIZE[0] * hor
-            pos_y = SPR_SIZE[1] * vert
+            pos_x = spr_size[0] * hor
+            pos_y = spr_size[1] * vert
             spr_list[hor] = sprite_sheet.subsurface(
-                pygame.Rect((pos_x, pos_y), SPR_SIZE))
+                pygame.Rect((pos_x, pos_y), spr_size))
 
         for i in spr_order:
             all_lists[vert].append(spr_list[i])
